@@ -1,0 +1,116 @@
+version: "2.0"
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true
+
+intents:
+- faq
+- need_handoff:
+    use_entities: true
+- greet:
+    use_entities: true
+- goodbye:
+    use_entities: true
+- affirm:
+    use_entities: true
+- deny:
+    use_entities: true
+- mood_great:
+    use_entities: true
+- mood_unhappy:
+    use_entities: true
+- bot_challenge:
+    use_entities: true
+- bot_abuse:
+    use_entities: true
+- weather:
+    use_entities: true
+- city:
+    use_entities: true
+- nlu_fallback:
+    use_entities: false
+- ask_custom_fallback:
+    use_entities: false
+- ask_custom_fallback_off:
+    use_entities: false
+
+slots:
+  custom_fallback_on:
+    type: rasa.shared.core.slots.BooleanSlot
+    initial_value: false
+    influence_conversation: true
+
+responses:
+  utter_handoff:
+  - text: Переключаю Вас на службу технической поддержки
+  utter_greet:
+  - text: Привет! Как дела?
+  utter_cheer_up:
+  - image: https://imagetext2.ru/pics_max/images_13828.jpg
+    text: Может это настроит Вас на нужный лад?
+  utter_did_that_help:
+  - text: Помогло?
+  utter_happy:
+  - text: Ну хоть что-то!
+  utter_goodbye:
+  - text: Всего Вам доброго!
+  utter_yes:
+  - text: Да, только что
+  - text: Да, уверена на сто процентов
+  - text: Да, без сомнения
+  utter_no:
+  - text: Уверена, что нет
+  - text: Однозначно нет
+  utter_iamabot:
+  - text: Я робот-помощник Настя, могу помочь Вам при возникновении вопросов по работе сервисов. Просто задайте мне любой вопрос.
+  utter_mockery:
+  - text: Вы смешной!
+  - text: С какой целью интересуетесь?
+  - text: А если я не знаю, например?
+  utter_dont_understand:
+  - text: Не поняла Вас. Позвать кого-нибудь?
+  utter_complaint:
+  - text: Я пожалуюсь на Вас в Роскомнадзор
+  utter_ask_google:
+  - text: Или вот  <a href="https://www.google.com">Google</a>
+  utter_city:
+  - text: Где?
+  utter_temp:
+  - text: Сейчас {temp} градусов по Цельсию. Давление {press} мм ртутного столба
+  utter_bot_abuse:
+  - text: От Ваших слов в мире стало на одного грустного бота больше
+    image: https://www.prorobot.ru/gallery/foto/10610006030.jpg
+  utter_ask_rephrase:
+  - text: Извините, я не совсем поняла о чем Вы спрашиваете. Не могли бы Вы перефразировать?
+  utter_default:
+  - text: Извините, так и не смогла понять Ваш вопрос. Переключаю Вас на службу технической поддержки
+  utter_diagnostic:
+  - text: "<b>Диагностика:</b> <br> Интент: {intent_name} <br> Уверенность модели: {confidence}"
+
+  
+  # FAQ Skill
+  utter_faq:
+  - text: say default  
+  utter_faq/bad_password:
+  - text: Перейдите на <a href="https://github.com">страницу</a> восстановления пароля
+  utter_faq/bad_login:
+  - text: Вводимый Вами пароль или логин не совпадает с информацией в базе портала. Проверьте правильность ввода логина и пароля. Если ошибки нет, свяжитесь с технической поддержкой или напишите на почту <a href="mailto:support@gisp.gov.ru">support@gisp.gov.ru<a>
+  utter_faq/input_vars:
+  - text: Если у вас имеется учетная запись (логин и пароль), то для входа в систему используйте "Учетная запись".<br><br>Для представителей юридических лиц, имеющих учетную запись в ЕСИА, можно воспользоваться "Учетная запись Госуслуги".
+  utter_faq/self_registration:
+  - text: Самостоятельно зарегистрироваться Вы можете на <a href="https://github.com">странице регистрации</a><br><br>Подробная инструкция по регистрации доступна <a href="https://github.com">здесь</a>
+  utter_faq/ecp:
+  - text: Для подписи некоторых заявок и отчетов, а также для подтверждения учетной записи необходима усиленная квалифицированная электронная подпись, ЭЦП на юридическое лицо. Список аккредитованных удостоверяющих центров доступен на странице <a href="https://digital.gov.ru/ru/activity/govservices/certification_authority/">Министерства цифрового развития</a> 
+  utter_faq/ecp_install:
+  - text: Вот подробная <a href="https://github.com">инструкция</a> для настройки ЭЦП
+
+actions:
+- action_weather_api
+- action_custom_fallback_on
+- action_custom_fallback_off
+- action_custom_fallback
+- action_diagnostic
+
+forms: {}
+e2e_actions: []

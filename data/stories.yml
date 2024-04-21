@@ -1,0 +1,64 @@
+version: "2.0"
+
+stories:
+
+- story: human_handoff
+  steps:
+  - intent: need_handoff
+  - action: utter_handoff
+
+- story: sad_bot
+  steps:
+  - intent: bot_abuse
+  - action: utter_bot_abuse
+  
+- story: happy path
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: mood_great
+  - action: utter_happy
+- story: sad path 1
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: mood_unhappy
+  - action: utter_cheer_up
+  - action: utter_did_that_help
+  - intent: affirm
+  - action: utter_happy
+- story: sad path 2
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: mood_unhappy
+  - action: utter_cheer_up
+  - action: utter_did_that_help
+  - intent: deny
+  - action: utter_goodbye
+
+- story: bot challenge
+  steps:
+  - intent: bot_challenge
+  - action: utter_iamabot
+
+- story: Weather
+  steps:
+  - intent: weather
+  - action: utter_city
+
+# Custom fallback on
+- story: custom_fallback_on_story
+  steps:
+  - intent: ask_custom_fallback
+  - slot_was_set:
+    - custom_fallback_on: False
+  - action: action_custom_fallback_on
+
+# Custom fallback off
+- story: custom_fallback_off_story
+  steps:
+  - intent: ask_custom_fallback_off
+  - slot_was_set:
+    - custom_fallback_on: True
+  - action: action_custom_fallback_off

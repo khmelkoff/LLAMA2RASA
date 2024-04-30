@@ -30,16 +30,28 @@ intents:
     use_entities: true
 - nlu_fallback:
     use_entities: false
-- ask_custom_fallback:
+- ask_llm_on:
     use_entities: false
-- ask_custom_fallback_off:
+- ask_llm_off:
+    use_entities: false
+- kb_query_credit_and_debt_cards:
+    use_entities: false
+- kb_query_cashback:
+    use_entities: false
+- kb_query_currency:
+    use_entities: false
+- kb_mir:
     use_entities: false
 
 slots:
-  custom_fallback_on:
+  llm_on:
     type: rasa.shared.core.slots.BooleanSlot
     initial_value: false
-    influence_conversation: true
+    influence_conversation: false
+  knowledge_base_on:
+    type: rasa.shared.core.slots.BooleanSlot
+    initial_value: false
+    influence_conversation: false
 
 responses:
   utter_handoff:
@@ -63,7 +75,7 @@ responses:
   - text: Уверена, что нет
   - text: Однозначно нет
   utter_iamabot:
-  - text: Я робот-помощник Настя, могу помочь Вам при возникновении вопросов по работе сервисов. Просто задайте мне любой вопрос.
+  - text: Я виртуальный ассистент, могу помочь Вам при возникновении вопросов по работе сервисов. Просто задайте мне любой вопрос.
   utter_mockery:
   - text: Вы смешной!
   - text: С какой целью интересуетесь?
@@ -87,7 +99,10 @@ responses:
   - text: Извините, так и не смогла понять Ваш вопрос. Переключаю Вас на службу технической поддержки
   utter_diagnostic:
   - text: "<b>Диагностика:</b> <br> Интент: {intent_name} <br> Уверенность модели: {confidence}"
-
+  utter_knowledge_base_on:
+  - text: Подключена база знаний <b>{knowledge_base_name}</b>
+  utter_knowledge_base_off:
+  - text: Для ответа на этот вопрос необходимо подключить лингвистическую модель.
   
   # FAQ Skill
   utter_faq:
@@ -107,9 +122,10 @@ responses:
 
 actions:
 - action_weather_api
-- action_custom_fallback_on
-- action_custom_fallback_off
-- action_custom_fallback
+- action_llm_on
+- action_llm_off
+- action_llm_query
+- action_kb_query
 - action_diagnostic
 
 forms: {}

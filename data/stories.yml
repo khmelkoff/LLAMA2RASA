@@ -17,12 +17,14 @@ stories:
   - intent: greet
   - action: utter_greet
   - intent: mood_great
+  - action: action_diagnostic
   - action: utter_happy
 - story: sad path 1
   steps:
   - intent: greet
   - action: utter_greet
   - intent: mood_unhappy
+  - action: action_diagnostic
   - action: utter_cheer_up
   - action: utter_did_that_help
   - intent: affirm
@@ -32,15 +34,11 @@ stories:
   - intent: greet
   - action: utter_greet
   - intent: mood_unhappy
+  - action: action_diagnostic
   - action: utter_cheer_up
   - action: utter_did_that_help
   - intent: deny
   - action: utter_goodbye
-
-- story: bot challenge
-  steps:
-  - intent: bot_challenge
-  - action: utter_iamabot
 
 - story: Weather
   steps:
@@ -50,15 +48,36 @@ stories:
 # Custom fallback on
 - story: custom_fallback_on_story
   steps:
-  - intent: ask_custom_fallback
-  - slot_was_set:
-    - custom_fallback_on: False
-  - action: action_custom_fallback_on
+  - intent: ask_llm_on
+  - action: action_llm_on
 
 # Custom fallback off
 - story: custom_fallback_off_story
   steps:
-  - intent: ask_custom_fallback_off
-  - slot_was_set:
-    - custom_fallback_on: True
-  - action: action_custom_fallback_off
+  - intent: ask_llm_off
+  - action: action_llm_off
+
+# Knowledge base
+- story: kb_cards_story
+  steps:
+  - intent: kb_query_credit_and_debt_cards
+  - action: action_diagnostic
+  - action: action_kb_query
+
+- story: kb_query_cashback_story
+  steps:
+  - intent: kb_query_cashback
+  - action: action_diagnostic
+  - action: action_kb_query
+
+- story: kb_query_currency_story
+  steps:
+  - intent: kb_query_currency
+  - action: action_diagnostic
+  - action: action_kb_query
+
+- story: kb_mir_story
+  steps:
+  - intent: kb_mir
+  - action: action_diagnostic
+  - action: action_kb_query

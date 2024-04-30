@@ -11,27 +11,16 @@ rules:
   - intent: bot_challenge
   - action: utter_iamabot
   
-- rule: Call wether API if intent = city
+- rule: Call weather API if intent = city
   steps:
   - intent: city
   - action: action_weather_api
 
 - rule: respond to FAQs
-  condition:
-    - slot_was_set:
-      - custom_fallback_on: False
   steps:
   - intent: faq
   - action: utter_faq
   - action: action_diagnostic
-
-- rule: respond to FAQs 2
-  condition:
-    - slot_was_set:
-      - custom_fallback_on: True
-  steps:
-  - intent: faq
-  - action: action_custom_fallback
 
 #- rule: Implementation of the Two-Stage-Fallback
 #  steps:
@@ -40,9 +29,8 @@ rules:
 #  - active_loop: action_two_stage_fallback
 
 - rule: Implementation of Custom Fallback
-  condition:
-    - slot_was_set:
-        - custom_fallback_on: True
   steps:
   - intent: nlu_fallback
-  - action: action_custom_fallback
+  - action: action_llm_query
+
+

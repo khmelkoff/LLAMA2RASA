@@ -65,3 +65,28 @@ async def search_kb(query: str):
     print(response)
 
     return response
+
+
+@app.get("/rephrase")
+async def rephrase(history: str, query: str):
+    # print(f"query: {query}")
+    # converse = model_obj.get_model()
+    converse = model_obj.get_conv_chain_rephrase()
+
+    if converse is None:
+        raise HTTPException(status_code=500, detail="Model Not Generated")
+
+    response = converse.invoke({'context': history, 'question': query})
+    print(response)
+
+    return response
+
+
+@app.get("/rd")
+async def get_rel_docs(query: str):
+    print(f"query: {query}")
+    # converse = model_obj.get_model()
+    docs = model_obj.get_relevant_docs(query)
+
+    print(docs)
+    return docs

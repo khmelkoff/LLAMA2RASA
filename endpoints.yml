@@ -32,6 +32,16 @@ action_endpoint:
 #    username: <username used for authentication>
 #    password: <password used for authentication>
 
+#tracker_store:
+#    type: SQL
+#    dialect: "sqlite"
+#    url: # (optional) host of the sql db
+#    db: "rasa_conversations.db"
+#    username: # username
+#    password: # password
+#    query: # optional dictionary to be added as a query string to the connection url
+#      driver: my-driver
+
 # Event broker which all conversation events should be streamed to.
 # https://rasa.com/docs/rasa/event-brokers
 

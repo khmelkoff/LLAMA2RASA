@@ -17,14 +17,12 @@ stories:
   - intent: greet
   - action: utter_greet
   - intent: mood_great
-  - action: action_diagnostic
   - action: utter_happy
 - story: sad path 1
   steps:
   - intent: greet
   - action: utter_greet
   - intent: mood_unhappy
-  - action: action_diagnostic
   - action: utter_cheer_up
   - action: utter_did_that_help
   - intent: affirm
@@ -34,11 +32,32 @@ stories:
   - intent: greet
   - action: utter_greet
   - intent: mood_unhappy
-  - action: action_diagnostic
   - action: utter_cheer_up
   - action: utter_did_that_help
   - intent: deny
   - action: utter_goodbye
+
+# FAQ stories
+- story: bad_password_story
+  steps:
+  - intent: bad_password
+  - action: action_diagnostic
+  - action: utter_bad_password
+- story: bad_login_story
+  steps:
+  - intent: bad_login
+  - action: action_diagnostic
+  - action: utter_bad_login
+- story: input_variants_story
+  steps:
+  - intent: input_variants
+  - action: action_diagnostic
+  - action: utter_input_variants
+- story: self_registration_story
+  steps:
+  - intent: self_registration
+  - action: action_diagnostic
+  - action: utter_self_registration
 
 - story: Weather
   steps:
@@ -49,13 +68,34 @@ stories:
 - story: custom_fallback_on_story
   steps:
   - intent: ask_llm_on
+  - action: action_diagnostic
   - action: action_llm_on
 
 # Custom fallback off
 - story: custom_fallback_off_story
   steps:
   - intent: ask_llm_off
+  - action: action_diagnostic
   - action: action_llm_off
+
+# Diagnostic on
+- story: diagnostic_on_story
+  steps:
+  - intent: ask_diagnostic_on
+  - action: action_diagnostic_on
+
+# Diagnostic off
+- story: diagnostic_off_story
+  steps:
+  - intent: ask_diagnostic_off
+  - action: action_diagnostic_off
+
+# Custom fallback on
+- story: knowledge_base_on_story
+  steps:
+  - intent: ask_kb_on
+  - action: action_diagnostic
+  - action: action_kb_on
 
 # Knowledge base
 - story: kb_cards_story
@@ -81,3 +121,9 @@ stories:
   - intent: kb_mir
   - action: action_diagnostic
   - action: action_kb_query
+
+- story: сompliment_story
+  steps:
+  - intent: compliment
+  - action: action_diagnostic
+  - action: utter_compliment

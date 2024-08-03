@@ -5,7 +5,6 @@ session_config:
   carry_over_slots_to_new_session: true
 
 intents:
-- faq
 - need_handoff:
     use_entities: true
 - greet:
@@ -24,6 +23,14 @@ intents:
     use_entities: true
 - bot_abuse:
     use_entities: true
+- bad_password:
+    use_entities: true
+- bad_login:
+    use_entities: true
+- input_variants:
+    use_entities: true
+- self_registration:
+    use_entities: true
 - weather:
     use_entities: true
 - city:
@@ -34,6 +41,8 @@ intents:
     use_entities: false
 - ask_llm_off:
     use_entities: false
+- ask_kb_on:
+    use_entities: false
 - kb_query_credit_and_debt_cards:
     use_entities: false
 - kb_query_cashback:
@@ -42,6 +51,16 @@ intents:
     use_entities: false
 - kb_mir:
     use_entities: false
+- ask_diagnostic_off:
+    use_entities: true
+- ask_diagnostic_on:
+    use_entities: true
+- compliment:
+    use_entities: true
+
+entities:
+- NO
+- NOTHING
 
 slots:
   llm_on:
@@ -52,6 +71,16 @@ slots:
     type: rasa.shared.core.slots.BooleanSlot
     initial_value: false
     influence_conversation: false
+  diagnostic_on:
+    type: rasa.shared.core.slots.BooleanSlot
+    initial_value: false
+    influence_conversation: false
+  dialog_memory:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: false
+    influence_conversation: false
+
 
 responses:
   utter_handoff:
@@ -102,31 +131,33 @@ responses:
   utter_knowledge_base_on:
   - text: Подключена база знаний <b>{knowledge_base_name}</b>
   utter_knowledge_base_off:
-  - text: Для ответа на этот вопрос необходимо подключить лингвистическую модель.
+  - text: Для ответа на этот вопрос необходимо подключить базу знаний.
+  utter_compliment:
+  - text: Доброе слово и боту приятно
+  - text: Спасибо, приятно слышать
+  - text: Приятно слышать
+  - text: Спасибо за комплимент
   
   # FAQ Skill
-  utter_faq:
-  - text: say default  
-  utter_faq/bad_password:
+  utter_bad_password:
   - text: Перейдите на <a href="https://github.com">страницу</a> восстановления пароля
-  utter_faq/bad_login:
+  utter_bad_login:
   - text: Вводимый Вами пароль или логин не совпадает с информацией в базе портала. Проверьте правильность ввода логина и пароля. Если ошибки нет, свяжитесь с технической поддержкой или напишите на почту <a href="mailto:support@gisp.gov.ru">support@gisp.gov.ru<a>
-  utter_faq/input_vars:
+  utter_input_variants:
   - text: Если у вас имеется учетная запись (логин и пароль), то для входа в систему используйте "Учетная запись".<br><br>Для представителей юридических лиц, имеющих учетную запись в ЕСИА, можно воспользоваться "Учетная запись Госуслуги".
-  utter_faq/self_registration:
+  utter_self_registration:
   - text: Самостоятельно зарегистрироваться Вы можете на <a href="https://github.com">странице регистрации</a><br><br>Подробная инструкция по регистрации доступна <a href="https://github.com">здесь</a>
-  utter_faq/ecp:
-  - text: Для подписи некоторых заявок и отчетов, а также для подтверждения учетной записи необходима усиленная квалифицированная электронная подпись, ЭЦП на юридическое лицо. Список аккредитованных удостоверяющих центров доступен на странице <a href="https://digital.gov.ru/ru/activity/govservices/certification_authority/">Министерства цифрового развития</a> 
-  utter_faq/ecp_install:
-  - text: Вот подробная <a href="https://github.com">инструкция</a> для настройки ЭЦП
 
 actions:
 - action_weather_api
 - action_llm_on
 - action_llm_off
 - action_llm_query
+- action_kb_on
 - action_kb_query
 - action_diagnostic
+- action_diagnostic_on
+- action_diagnostic_off
 
 forms: {}
 e2e_actions: []

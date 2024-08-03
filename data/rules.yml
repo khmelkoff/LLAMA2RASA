@@ -9,18 +9,14 @@ rules:
 - rule: Say 'I am a bot' anytime the user challenges
   steps:
   - intent: bot_challenge
+  - action: action_diagnostic
   - action: utter_iamabot
   
 - rule: Call weather API if intent = city
   steps:
   - intent: city
-  - action: action_weather_api
-
-- rule: respond to FAQs
-  steps:
-  - intent: faq
-  - action: utter_faq
   - action: action_diagnostic
+  - action: action_weather_api
 
 #- rule: Implementation of the Two-Stage-Fallback
 #  steps:
@@ -31,6 +27,5 @@ rules:
 - rule: Implementation of Custom Fallback
   steps:
   - intent: nlu_fallback
+  - action: action_diagnostic
   - action: action_llm_query
-
-

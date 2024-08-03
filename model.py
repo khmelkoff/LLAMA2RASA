@@ -8,9 +8,6 @@ from typing import List, Tuple, Final
 from langchain_community.document_loaders import TextLoader
 from langchain.text_splitter import MarkdownHeaderTextSplitter
 from langchain_community.vectorstores import Chroma
-from langchain_community.retrievers import BM25Retriever
-from langchain.retrievers import EnsembleRetriever
-from langchain.retrievers.self_query.base import SelfQueryRetriever
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from operator import itemgetter
 
@@ -37,9 +34,32 @@ PROMPT_TEMPLATE_KB = """
 Используйте максимум три предложения и будьте краткими.\n Контекст: {context} "</s><s>"role": "user"\n"content": Вопрос: {question}</s>
 <s>bot\n Ответ:
 """
-BM25_K = 1
-MMR_K = 2
-MMR_FETCH_K = 3
+PROMPT_TEMPLATE_EXPERIMENTAL = """
+<s>"role": "system"\n"content": "Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language, that can be used to query a FAISS index. This query will be used to retrieve documents with additional context. 
+Let me share a couple examples that will be important. If this is the second question onwards, you should properly rephrase the question like this: 
+
+Chat History:
+Human: Чем кредитная карта отличается от дебетовой?
+AI: Кредитная карта - это платежная карта, которая предоставляет вам возможность заемных средств, которые вам необходимо вернуть в срок, установленный банком, а также оплатить проценты за использование средств. Дебетовая карта - это платежная карта, на которой лежат ваши деньги, которые вы можете использовать как угодно, без заемных средств и процентов.
+Follow Up Input: Как её оформить?
+Standalone Question: Как оформить кредитную карту?
+
+Chat History:
+Human: Что такое дебетовая карта?
+AI: Дебетовая карта - это платежная карта, на которой лежат ваши деньги.
+Follow Up Input: Сколько стоит её обслуживание?
+Standalone Question: Сколько стоит обслуживание дебетовой карты?
+
+Now, with those examples, here is the actual chat history and input question.
+
+Chat History: {context}"</s>
+
+<s>"role": "user"\n"content": Follow Up Input: {question}</s>
+<s>bot\n Standalone question:
+"""
+
+THRESHOLD = 0.25
+RELEVANT_K = 3
 
 
 # Text loader and title splitter
@@ -51,48 +71,27 @@ def load_and_split_markdown(file_path: str, splitter: List[Tuple[str, str]]):
     md_header_splits = markdown_splitter.split_text(docs[0].page_content)
     return md_header_splits
 
-
-# Knowledge Base Retriever
-def get_retriever(splits, bm25_k, mmr_k, mmr_fetch_k):
-
-    # Embeddings for vector search
-    embedding = HuggingFaceEmbeddings(
-        model_name="cointegrated/LaBSE-en-ru", model_kwargs={"device": "cuda"}
-    )
-
-    # DB for our vectors
-    vectorstore = Chroma.from_documents(documents=splits, embedding=embedding)
-
-    # Key-word retriever
-    bm25_retriever = BM25Retriever.from_documents(splits)
-    bm25_retriever.k = bm25_k
-
-    # Vector-based retriever
-    mmr_retriever = vectorstore.as_retriever(
-        search_type="mmr", search_kwargs={'k': mmr_k, 'fetch_k': mmr_fetch_k}
-    )
-
-    # Retriever combination
-    ensemble_retriever = EnsembleRetriever(
-        retrievers=[bm25_retriever, mmr_retriever],
-        weights=[0.4, 0.6]
-    )
-
-    return ensemble_retriever
-
-
 # Retrieved documents formatter
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 
+# Embeddings for vector search
+embedding = HuggingFaceEmbeddings(
+    model_name="cointegrated/LaBSE-en-ru", model_kwargs={"device": "cuda"}
+)
+
 docs = load_and_split_markdown(KB_FILE_PATH, HEADERS_TO_SPLIT)
 print('Knowledge base loaded, kb chancks:', len(docs))
 
-ensemble_retriever = get_retriever(
-    docs,
-    BM25_K, MMR_K, MMR_FETCH_K
-)
+# DB for our vectors
+vectorstore = Chroma.from_documents(documents=docs, embedding=embedding)
+print('Vectorstore created')
+
+# Create retriever
+retriever = vectorstore.as_retriever(
+        search_type="similarity_score_threshold", search_kwargs={'k': RELEVANT_K, 'score_threshold': THRESHOLD}
+    )
 print('Retriever created')
 
 
@@ -107,13 +106,13 @@ class Model:
 
         self.llm = LlamaCpp(
             model_path=model_path,
-            temperature=0.1,
+            temperature=0.,
             max_tokens=512,
             top_p=1,
             callback_manager=None,  # callback_manager,
             verbose=True,  # Verbose is required to pass to the callback manager
             n_ctx=2048,
-            n_gpu_layers=24,
+            n_gpu_layers=30,
             stop=['Human', 'Human:', 'bot']
         )
 
@@ -125,6 +124,10 @@ class Model:
     def get_kb_name(self):
         return self.kb_name
 
+    @staticmethod
+    def get_relevant_docs(query: str):
+        return vectorstore.similarity_search_with_relevance_scores(query, k=RELEVANT_K, score_threshold=THRESHOLD)
+
     def get_conv_chain(self):
 
         template = PROMPT_TEMPLATE
@@ -133,6 +136,25 @@ class Model:
             input_variables=['input'],
             template=template
         )
+
+        chain = LLMChain(
+            llm=self.llm,
+            output_parser=StrOutputParser(),
+            prompt=prompt,
+            verbose=True
+        )
+        return chain
+
+    def get_conv_chain_rephrase(self):
+
+        template = PROMPT_TEMPLATE_EXPERIMENTAL
+
+        prompt = PromptTemplate(
+            input_variables=['context', 'question'],
+            template=template
+        )
+
+        print(prompt)
 
         chain = LLMChain(
             llm=self.llm,
@@ -158,25 +180,10 @@ class Model:
         )
 
         chain_with_source = RunnableParallel(
-            {"documents": ensemble_retriever, "question": RunnablePassthrough()}
+            {"documents": retriever, "question": RunnablePassthrough()}
         ) | {
                     "documents": lambda input: [doc.metadata for doc in input["documents"]],
                     "answer": chain_from_docs,
             }
 
         return chain_with_source
-
-    # async def model_chat(self):
-    #
-    #     self.converse = self.get_conv_chain()
-    #     print("completed model creation")
-    #     return self.converse
-
-    # async def model_kb(self):
-    #
-    #     self.converse = self.get_kb_chain()
-    #     print("completed kb and model creation")
-    #     return self.converse
-
-    # def get_model(self):
-    #     return self.converse
